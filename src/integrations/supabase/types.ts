@@ -14,7 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bills: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          due_date: string
+          fixed_bill_id: string | null
+          id: string
+          installment_group: string | null
+          installment_number: number | null
+          installment_total: number | null
+          name: string
+          notes: string | null
+          paid_at: string | null
+          status: Database["public"]["Enums"]["bill_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category?: string
+          created_at?: string
+          due_date: string
+          fixed_bill_id?: string | null
+          id?: string
+          installment_group?: string | null
+          installment_number?: number | null
+          installment_total?: number | null
+          name: string
+          notes?: string | null
+          paid_at?: string | null
+          status?: Database["public"]["Enums"]["bill_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          due_date?: string
+          fixed_bill_id?: string | null
+          id?: string
+          installment_group?: string | null
+          installment_number?: number | null
+          installment_total?: number | null
+          name?: string
+          notes?: string | null
+          paid_at?: string | null
+          status?: Database["public"]["Enums"]["bill_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      fixed_bills: {
+        Row: {
+          active: boolean
+          amount: number
+          category: string
+          created_at: string
+          day_of_month: number
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          amount: number
+          category?: string
+          created_at?: string
+          day_of_month: number
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          amount?: number
+          category?: string
+          created_at?: string
+          day_of_month?: number
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      monthly_income: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          month: number
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          month: number
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          month?: number
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +145,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      bill_status: "pending" | "paid"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +272,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      bill_status: ["pending", "paid"],
+    },
   },
 } as const
