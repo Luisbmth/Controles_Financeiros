@@ -8,13 +8,13 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthedLayout,
 });
 
-const tabs = [
+const tabs: Array<{ to: "/app" | "/calendar" | "/new" | "/fixed" | "/reports"; label: string; Icon: typeof Home; primary?: boolean }> = [
   { to: "/app", label: "Início", Icon: Home },
   { to: "/calendar", label: "Calendário", Icon: Calendar },
   { to: "/new", label: "Nova", Icon: Plus, primary: true },
   { to: "/fixed", label: "Fixas", Icon: Repeat },
   { to: "/reports", label: "Relatórios", Icon: BarChart3 },
-] as const;
+];
 
 function AuthedLayout() {
   const { user, loading } = useAuth();
