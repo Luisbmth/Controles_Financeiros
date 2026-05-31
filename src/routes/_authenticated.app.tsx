@@ -120,7 +120,7 @@ function Dashboard() {
           <EmptyState month={monthLabel} />
         ) : (
           <ul className="space-y-2.5">
-            {upcoming.map((b) => <BillRow key={b.id} bill={b} onPay={onPay} today={today} />)}
+            {upcoming.map((b) => <BillRow key={b.id} bill={b} onPay={onPay} onEdit={setEditing} today={today} />)}
           </ul>
         )}
       </section>
