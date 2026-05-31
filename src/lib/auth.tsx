@@ -15,9 +15,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       setLoading(false);
+      if (event === "SIGNED_OUT") {
+        try { sessionStorage.removeItem("saldo.unlocked"); } catch {}
+      }
     });
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
