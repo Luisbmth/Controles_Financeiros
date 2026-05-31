@@ -175,7 +175,7 @@ function StatCard({ label, value, sub, tone }: { label: string; value: string; s
   );
 }
 
-function BillRow({ bill, onPay, today }: { bill: Bill; onPay: (b: Bill) => void; today: Date }) {
+function BillRow({ bill, onPay, onEdit, today }: { bill: Bill; onPay: (b: Bill) => void; onEdit: (b: Bill) => void; today: Date }) {
   const due = parseISO(bill.due_date);
   const diff = differenceInCalendarDays(due, today);
   const overdue = bill.status === "pending" && diff < 0;
@@ -195,7 +195,12 @@ function BillRow({ bill, onPay, today }: { bill: Bill; onPay: (b: Bill) => void;
         className="h-10 w-1 rounded-full"
         style={{ background: CATEGORY_COLOR[bill.category] ?? "var(--color-muted)" }}
       />
-      <div className="min-w-0 flex-1">
+      <button
+        type="button"
+        onClick={() => onEdit(bill)}
+        className="min-w-0 flex-1 text-left active:opacity-70"
+        aria-label={`Editar ${bill.name}`}
+      >
         <div className="flex items-center gap-2">
           <p className="truncate font-semibold">{bill.name}</p>
           {bill.installment_total && (
@@ -211,10 +216,10 @@ function BillRow({ bill, onPay, today }: { bill: Bill; onPay: (b: Bill) => void;
           {overdue && <AlertTriangle className="h-3 w-3" />}
           {dueLabel} · {bill.category}
         </p>
-      </div>
-      <div className="text-right">
+      </button>
+      <button type="button" onClick={() => onEdit(bill)} className="text-right active:opacity-70">
         <p className="font-display font-bold tabular-nums">{formatBRL(bill.amount)}</p>
-      </div>
+      </button>
       <button
         onClick={() => onPay(bill)}
         className={cn(
