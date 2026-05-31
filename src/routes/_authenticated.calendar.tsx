@@ -10,6 +10,8 @@ import {
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BillEditSheet } from "@/components/BillEditSheet";
+import type { Bill } from "@/lib/bills";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Calendário · Saldo" }] }),
