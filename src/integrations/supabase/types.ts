@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_security: {
+        Row: {
+          biometric_credential_id: string | null
+          biometric_enabled: boolean
+          biometric_public_key: string | null
+          created_at: string
+          pin_hash: string
+          pin_salt: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          biometric_credential_id?: string | null
+          biometric_enabled?: boolean
+          biometric_public_key?: string | null
+          created_at?: string
+          pin_hash: string
+          pin_salt: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          biometric_credential_id?: string | null
+          biometric_enabled?: boolean
+          biometric_public_key?: string | null
+          created_at?: string
+          pin_hash?: string
+          pin_salt?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bills: {
         Row: {
           amount: number
