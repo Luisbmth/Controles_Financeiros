@@ -146,7 +146,7 @@ export async function verifyBiometric(credentialId: string) {
   const challenge = randomBytes(32);
   const assertion = (await navigator.credentials.get({
     publicKey: {
-      challenge,
+      challenge: challenge as BufferSource,
       timeout: 60_000,
       userVerification: "required",
       rpId: window.location.hostname,
