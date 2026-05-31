@@ -151,7 +151,7 @@ export async function verifyBiometric(credentialId: string) {
       userVerification: "required",
       rpId: window.location.hostname,
       allowCredentials: [{
-        id: b64urlToBuf(credentialId),
+        id: b64urlToBuf(credentialId) as BufferSource,
         type: "public-key",
         transports: ["internal"],
       }],
