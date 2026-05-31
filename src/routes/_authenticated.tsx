@@ -95,6 +95,8 @@ function AuthedLayout() {
           })}
         </div>
       </nav>
+      )}
+
 
       {/* Floating security shortcut */}
       {!onSetup && !pathname.startsWith("/security") && (
