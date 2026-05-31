@@ -10,7 +10,7 @@ import {
   unlockSession,
 } from "@/lib/security";
 
-export const Route = createFileRoute("/_authenticated/security/setup")({
+export const Route = createFileRoute("/_authenticated/pin-setup")({
   head: () => ({ meta: [{ title: "Configurar PIN · Saldo" }] }),
   component: SetupPage,
 });
