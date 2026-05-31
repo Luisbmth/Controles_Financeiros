@@ -10,6 +10,8 @@ import {
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BillEditSheet } from "@/components/BillEditSheet";
+import type { Bill } from "@/lib/bills";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Calendário · Saldo" }] }),
@@ -21,6 +23,7 @@ function CalendarPage() {
   const [cursor, setCursor] = useState({ y: today.getFullYear(), m: today.getMonth() + 1 });
   const { data: bills = [] } = useMonthBills(cursor.y, cursor.m);
   const [selected, setSelected] = useState<Date>(today);
+  const [editing, setEditing] = useState<Bill | null>(null);
 
   const monthStart = startOfMonth(new Date(cursor.y, cursor.m - 1));
   const monthEnd = endOfMonth(monthStart);
@@ -107,20 +110,28 @@ function CalendarPage() {
         ) : (
           <ul className="space-y-2.5">
             {dayBills.map((b) => (
-              <li key={b.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-sm ring-1 ring-border">
-                <span className="h-10 w-1 rounded-full" style={{ background: CATEGORY_COLOR[b.category] }} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">{b.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {b.category} · {b.status === "paid" ? "Pago" : "Pendente"}
-                  </p>
-                </div>
-                <p className="font-display font-bold tabular-nums">{formatBRL(b.amount)}</p>
+              <li key={b.id}>
+                <button
+                  type="button"
+                  onClick={() => setEditing(b as Bill)}
+                  className="flex w-full items-center gap-3 rounded-2xl bg-surface p-3 text-left shadow-sm ring-1 ring-border active:opacity-70"
+                >
+                  <span className="h-10 w-1 rounded-full" style={{ background: CATEGORY_COLOR[b.category] }} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold">{b.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {b.category} · {b.status === "paid" ? "Pago" : "Pendente"}
+                    </p>
+                  </div>
+                  <p className="font-display font-bold tabular-nums">{formatBRL(b.amount)}</p>
+                </button>
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      <BillEditSheet bill={editing} open={!!editing} onOpenChange={(v) => !v && setEditing(null)} />
     </div>
   );
 }
