@@ -60,9 +60,10 @@ function AuthedLayout() {
   }
 
   return (
-    <div className="app-shell pb-24">
+    <div className={cn("app-shell", !onSetup && "pb-24")}>
       <Outlet />
 
+      {!onSetup && (
       <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[480px] border-t border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
         <div className="grid grid-cols-5">
           {tabs.map(({ to, label, Icon, primary }) => {
