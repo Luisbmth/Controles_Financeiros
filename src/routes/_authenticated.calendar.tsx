@@ -23,6 +23,7 @@ function CalendarPage() {
   const [cursor, setCursor] = useState({ y: today.getFullYear(), m: today.getMonth() + 1 });
   const { data: bills = [] } = useMonthBills(cursor.y, cursor.m);
   const [selected, setSelected] = useState<Date>(today);
+  const [editing, setEditing] = useState<Bill | null>(null);
 
   const monthStart = startOfMonth(new Date(cursor.y, cursor.m - 1));
   const monthEnd = endOfMonth(monthStart);
