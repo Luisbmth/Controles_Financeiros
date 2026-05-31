@@ -129,7 +129,7 @@ function Dashboard() {
         <section className="px-5 pt-8">
           <h2 className="mb-3 font-display text-lg font-bold">Pagas</h2>
           <ul className="space-y-2.5">
-            {paid.slice(0, 6).map((b) => <BillRow key={b.id} bill={b} onPay={onPay} today={today} />)}
+            {paid.slice(0, 6).map((b) => <BillRow key={b.id} bill={b} onPay={onPay} onEdit={setEditing} today={today} />)}
           </ul>
         </section>
       )}
