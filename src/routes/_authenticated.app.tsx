@@ -24,6 +24,7 @@ function Dashboard() {
   const { data: bills = [], isLoading } = useMonthBills(cursor.y, cursor.m);
   const qc = useQueryClient();
   const { user } = useAuth();
+  const [editing, setEditing] = useState<Bill | null>(null);
 
   const totals = useMemo(() => {
     const total = bills.reduce((s, b) => s + Number(b.amount), 0);
