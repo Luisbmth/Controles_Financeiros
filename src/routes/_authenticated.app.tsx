@@ -148,6 +148,8 @@ function Dashboard() {
           <ChevronRight className="h-5 w-5 text-muted-foreground" />
         </Link>
       </section>
+
+      <BillEditSheet bill={editing} open={!!editing} onOpenChange={(v) => !v && setEditing(null)} />
     </div>
   );
 }
