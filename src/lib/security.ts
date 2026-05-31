@@ -101,10 +101,10 @@ export async function registerBiometric(userId: string, userEmail: string) {
   const challenge = randomBytes(32);
   const cred = (await navigator.credentials.create({
     publicKey: {
-      challenge,
+      challenge: challenge as BufferSource,
       rp: { name: "Saldo", id: window.location.hostname },
       user: {
-        id: enc.encode(userId),
+        id: enc.encode(userId) as BufferSource,
         name: userEmail,
         displayName: userEmail,
       },
