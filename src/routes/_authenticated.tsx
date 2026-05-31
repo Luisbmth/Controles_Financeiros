@@ -40,8 +40,8 @@ function AuthedLayout() {
 
   // No PIN configured yet → redirect to setup (except when already there)
   useEffect(() => {
-    if (sec === null && !pathname.startsWith("/security/setup")) {
-      navigate({ to: "/security/setup", replace: true });
+    if (sec === null && !pathname.startsWith("/pin-setup")) {
+      navigate({ to: "/pin-setup", replace: true });
     }
   }, [sec, pathname, navigate]);
 
@@ -54,7 +54,7 @@ function AuthedLayout() {
   }
 
   // Show lock screen if PIN exists and session not unlocked
-  const onSetup = pathname.startsWith("/security/setup");
+  const onSetup = pathname.startsWith("/pin-setup");
   if (sec && !unlocked && !onSetup) {
     return <LockScreen sec={sec} onUnlock={() => setUnlocked(true)} />;
   }

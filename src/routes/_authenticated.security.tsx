@@ -37,7 +37,7 @@ function SecurityPage() {
     return (
       <div className="px-5 pt-8">
         <p className="text-sm text-muted-foreground">Você ainda não configurou um PIN.</p>
-        <Button asChild className="mt-4"><Link to="/security/setup">Configurar agora</Link></Button>
+        <Button asChild className="mt-4"><Link to="/pin-setup">Configurar agora</Link></Button>
       </div>
     );
   }
@@ -87,7 +87,7 @@ function SecurityPage() {
         </div>
       </div>
 
-      <Link to="/security/setup"
+      <Link to="/pin-setup"
         className="mt-3 flex w-full items-center gap-3 rounded-2xl bg-surface p-4 active:scale-[0.99]">
         <KeyRound className="h-5 w-5 text-muted-foreground" />
         <div className="flex-1 text-left">

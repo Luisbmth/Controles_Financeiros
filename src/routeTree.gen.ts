@@ -14,12 +14,12 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSecurityRouteImport } from './routes/_authenticated.security'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated.reports'
+import { Route as AuthenticatedPinSetupRouteImport } from './routes/_authenticated.pin-setup'
 import { Route as AuthenticatedNewRouteImport } from './routes/_authenticated.new'
 import { Route as AuthenticatedMonthRouteImport } from './routes/_authenticated.month'
 import { Route as AuthenticatedFixedRouteImport } from './routes/_authenticated.fixed'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated.calendar'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated.app'
-import { Route as AuthenticatedSecuritySetupRouteImport } from './routes/_authenticated.security.setup'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -43,6 +43,11 @@ const AuthenticatedSecurityRoute = AuthenticatedSecurityRouteImport.update({
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPinSetupRoute = AuthenticatedPinSetupRouteImport.update({
+  id: '/pin-setup',
+  path: '/pin-setup',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedNewRoute = AuthenticatedNewRouteImport.update({
@@ -70,12 +75,6 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   path: '/app',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedSecuritySetupRoute =
-  AuthenticatedSecuritySetupRouteImport.update({
-    id: '/setup',
-    path: '/setup',
-    getParentRoute: () => AuthenticatedSecurityRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -85,9 +84,9 @@ export interface FileRoutesByFullPath {
   '/fixed': typeof AuthenticatedFixedRoute
   '/month': typeof AuthenticatedMonthRoute
   '/new': typeof AuthenticatedNewRoute
+  '/pin-setup': typeof AuthenticatedPinSetupRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/security': typeof AuthenticatedSecurityRouteWithChildren
-  '/security/setup': typeof AuthenticatedSecuritySetupRoute
+  '/security': typeof AuthenticatedSecurityRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -97,9 +96,9 @@ export interface FileRoutesByTo {
   '/fixed': typeof AuthenticatedFixedRoute
   '/month': typeof AuthenticatedMonthRoute
   '/new': typeof AuthenticatedNewRoute
+  '/pin-setup': typeof AuthenticatedPinSetupRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/security': typeof AuthenticatedSecurityRouteWithChildren
-  '/security/setup': typeof AuthenticatedSecuritySetupRoute
+  '/security': typeof AuthenticatedSecurityRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -111,9 +110,9 @@ export interface FileRoutesById {
   '/_authenticated/fixed': typeof AuthenticatedFixedRoute
   '/_authenticated/month': typeof AuthenticatedMonthRoute
   '/_authenticated/new': typeof AuthenticatedNewRoute
+  '/_authenticated/pin-setup': typeof AuthenticatedPinSetupRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
-  '/_authenticated/security': typeof AuthenticatedSecurityRouteWithChildren
-  '/_authenticated/security/setup': typeof AuthenticatedSecuritySetupRoute
+  '/_authenticated/security': typeof AuthenticatedSecurityRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -125,9 +124,9 @@ export interface FileRouteTypes {
     | '/fixed'
     | '/month'
     | '/new'
+    | '/pin-setup'
     | '/reports'
     | '/security'
-    | '/security/setup'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -137,9 +136,9 @@ export interface FileRouteTypes {
     | '/fixed'
     | '/month'
     | '/new'
+    | '/pin-setup'
     | '/reports'
     | '/security'
-    | '/security/setup'
   id:
     | '__root__'
     | '/'
@@ -150,9 +149,9 @@ export interface FileRouteTypes {
     | '/_authenticated/fixed'
     | '/_authenticated/month'
     | '/_authenticated/new'
+    | '/_authenticated/pin-setup'
     | '/_authenticated/reports'
     | '/_authenticated/security'
-    | '/_authenticated/security/setup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -198,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/pin-setup': {
+      id: '/_authenticated/pin-setup'
+      path: '/pin-setup'
+      fullPath: '/pin-setup'
+      preLoaderRoute: typeof AuthenticatedPinSetupRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/new': {
       id: '/_authenticated/new'
       path: '/new'
@@ -233,28 +239,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/security/setup': {
-      id: '/_authenticated/security/setup'
-      path: '/setup'
-      fullPath: '/security/setup'
-      preLoaderRoute: typeof AuthenticatedSecuritySetupRouteImport
-      parentRoute: typeof AuthenticatedSecurityRoute
-    }
   }
 }
-
-interface AuthenticatedSecurityRouteChildren {
-  AuthenticatedSecuritySetupRoute: typeof AuthenticatedSecuritySetupRoute
-}
-
-const AuthenticatedSecurityRouteChildren: AuthenticatedSecurityRouteChildren = {
-  AuthenticatedSecuritySetupRoute: AuthenticatedSecuritySetupRoute,
-}
-
-const AuthenticatedSecurityRouteWithChildren =
-  AuthenticatedSecurityRoute._addFileChildren(
-    AuthenticatedSecurityRouteChildren,
-  )
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
@@ -262,8 +248,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFixedRoute: typeof AuthenticatedFixedRoute
   AuthenticatedMonthRoute: typeof AuthenticatedMonthRoute
   AuthenticatedNewRoute: typeof AuthenticatedNewRoute
+  AuthenticatedPinSetupRoute: typeof AuthenticatedPinSetupRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
-  AuthenticatedSecurityRoute: typeof AuthenticatedSecurityRouteWithChildren
+  AuthenticatedSecurityRoute: typeof AuthenticatedSecurityRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -272,8 +259,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFixedRoute: AuthenticatedFixedRoute,
   AuthenticatedMonthRoute: AuthenticatedMonthRoute,
   AuthenticatedNewRoute: AuthenticatedNewRoute,
+  AuthenticatedPinSetupRoute: AuthenticatedPinSetupRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
-  AuthenticatedSecurityRoute: AuthenticatedSecurityRouteWithChildren,
+  AuthenticatedSecurityRoute: AuthenticatedSecurityRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -288,3 +276,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
