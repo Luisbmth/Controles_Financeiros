@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth";
+import { loginAttempts } from "@/lib/security";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,13 @@ export const Route = createFileRoute("/login")({
   component: Login,
 });
 
+function fmt(ms: number) {
+  const s = Math.ceil(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  return `${m}m ${(s % 60).toString().padStart(2, "0")}s`;
+}
+
 function Login() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -21,13 +29,28 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [lockedFor, setLockedFor] = useState(0);
 
   useEffect(() => {
     if (user) navigate({ to: "/app", replace: true });
   }, [user, navigate]);
 
+  // Recompute lock timer
+  useEffect(() => {
+    const tick = () => {
+      if (!email) { setLockedFor(0); return; }
+      const s = loginAttempts.get(email);
+      const left = s.lockedUntil - Date.now();
+      setLockedFor(left > 0 ? left : 0);
+    };
+    tick();
+    const id = setInterval(tick, 500);
+    return () => clearInterval(id);
+  }, [email]);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockedFor > 0) return;
     setBusy(true);
     try {
       if (mode === "signup") {
@@ -37,10 +60,20 @@ function Login() {
           options: { emailRedirectTo: `${window.location.origin}/app` },
         });
         if (error) throw error;
+        loginAttempts.reset(email);
         toast.success("Conta criada! Você já está logado.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          const s = loginAttempts.fail(email);
+          if (s.lockedUntil > 0) {
+            toast.error(`Muitas tentativas. Tente em ${fmt(s.lockedUntil - Date.now())}.`);
+          } else {
+            throw error;
+          }
+        } else {
+          loginAttempts.reset(email);
+        }
       }
     } catch (err: any) {
       toast.error(err.message ?? "Erro ao entrar");
@@ -57,6 +90,8 @@ function Login() {
       setBusy(false);
     }
   };
+
+  const disabled = busy || lockedFor > 0;
 
   return (
     <div className="app-shell flex min-h-dvh flex-col px-6 py-10">
@@ -80,14 +115,19 @@ function Login() {
         <div className="space-y-1.5">
           <Label htmlFor="password">Senha</Label>
           <Input
-            id="password" type="password" required minLength={6}
+            id="password" type="password" required minLength={6} maxLength={128}
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
             value={password} onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••" className="h-12"
           />
         </div>
-        <Button type="submit" disabled={busy} className="h-12 w-full text-base font-semibold">
-          {busy ? "Aguarde…" : mode === "signin" ? "Entrar" : "Criar conta"}
+        {lockedFor > 0 && (
+          <div className="rounded-lg bg-destructive/10 px-3 py-2 text-center text-sm text-destructive">
+            Aguarde {fmt(lockedFor)} para tentar novamente
+          </div>
+        )}
+        <Button type="submit" disabled={disabled} className="h-12 w-full text-base font-semibold">
+          {busy ? "Aguarde…" : lockedFor > 0 ? `Bloqueado (${fmt(lockedFor)})` : mode === "signin" ? "Entrar" : "Criar conta"}
         </Button>
       </form>
 
