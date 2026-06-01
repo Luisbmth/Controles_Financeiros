@@ -42,8 +42,8 @@ function MonthView() {
 
   const total = bills.reduce((s, b) => s + Number(b.amount), 0);
   const paid = bills.filter((b) => b.status === "paid").reduce((s, b) => s + Number(b.amount), 0);
+  const pending = total - paid;
   const sobra = saved - total;
-  const sobraReal = saved - paid;
 
   const save = async () => {
     if (!user) return;
@@ -89,10 +89,11 @@ function MonthView() {
         <Card icon={<TrendingUp className="h-5 w-5" />} tone="success"
           label="Receita" value={formatBRL(saved)} />
         <Card icon={<TrendingDown className="h-5 w-5" />} tone="warning"
-          label="Contas do mês" value={formatBRL(total)} sub={`${formatBRL(paid)} já pago`} />
+          label="Gasto do mês" value={formatBRL(total)}
+          sub={`${formatBRL(paid)} pago · ${formatBRL(pending)} a pagar`} />
         <Card icon={<Wallet className="h-5 w-5" />} tone={sobra >= 0 ? "success" : "danger"}
-          label="Sobra prevista" value={formatBRL(sobra)}
-          sub={`Sobra atual: ${formatBRL(sobraReal)}`} big />
+          label="Sobra do mês" value={formatBRL(sobra)}
+          sub="Receita menos todos os gastos" big />
       </section>
     </div>
   );
