@@ -1,7 +1,8 @@
 import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { Home, Plus, Calendar, BarChart3, Repeat, Shield } from "lucide-react";
+import { useProfile } from "@/lib/profile";
+import { Home, Plus, Calendar, BarChart3, Repeat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getSecurity, unlockSession, type SecurityRow } from "@/lib/security";
 import { LockScreen } from "@/components/LockScreen";
@@ -14,7 +15,7 @@ const tabs: Array<{ to: "/app" | "/calendar" | "/new" | "/fixed" | "/reports"; l
   { to: "/app", label: "Início", Icon: Home },
   { to: "/calendar", label: "Calendário", Icon: Calendar },
   { to: "/new", label: "Nova", Icon: Plus, primary: true },
-  { to: "/fixed", label: "Fixas", Icon: Repeat },
+  { to: "/fixed", label: "Custos", Icon: Repeat },
   { to: "/reports", label: "Relatórios", Icon: BarChart3 },
 ];
 
@@ -25,6 +26,7 @@ function AuthedLayout() {
 
   const [sec, setSec] = useState<SecurityRow | null | undefined>(undefined);
   const [unlocked, setUnlocked] = useState(unlockSession.is());
+  const { data: profile, isLoading: profileLoading } = useProfile();
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login", replace: true });
@@ -45,6 +47,13 @@ function AuthedLayout() {
     }
   }, [sec, pathname, navigate]);
 
+  // PIN ok but no profile → onboarding
+  useEffect(() => {
+    if (sec && !profileLoading && profile === null && !pathname.startsWith("/onboarding")) {
+      navigate({ to: "/onboarding", replace: true });
+    }
+  }, [sec, profile, profileLoading, pathname, navigate]);
+
   if (loading || !user || sec === undefined) {
     return (
       <div className="app-shell flex min-h-dvh items-center justify-center">
@@ -55,15 +64,17 @@ function AuthedLayout() {
 
   // Show lock screen if PIN exists and session not unlocked
   const onSetup = pathname.startsWith("/pin-setup");
+  const onOnboarding = pathname.startsWith("/onboarding");
+  const hideChrome = onSetup || onOnboarding;
   if (sec && !unlocked && !onSetup) {
     return <LockScreen sec={sec} onUnlock={() => setUnlocked(true)} />;
   }
 
   return (
-    <div className={cn("app-shell", !onSetup && "pb-24")}>
+    <div className={cn("app-shell", !hideChrome && "pb-24")}>
       <Outlet />
 
-      {!onSetup && (
+      {!hideChrome && (
       <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[480px] border-t border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
         <div className="grid grid-cols-5">
           {tabs.map(({ to, label, Icon, primary }) => {
@@ -98,13 +109,6 @@ function AuthedLayout() {
       )}
 
 
-      {/* Floating security shortcut */}
-      {!onSetup && !pathname.startsWith("/security") && (
-        <Link to="/security"
-          className="fixed right-4 top-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-surface/90 shadow backdrop-blur">
-          <Shield className="h-5 w-5 text-primary" />
-        </Link>
-      )}
     </div>
   );
 }

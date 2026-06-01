@@ -1,57 +1,63 @@
-## O que vou implementar
+## O que vou construir
 
-### 1. Tabela nova: `app_security`
-Guarda as configurações de bloqueio por usuário:
-- `pin_hash` + `pin_salt` (PIN nunca em texto puro — hash SHA-256 com salt aleatório)
-- `biometric_credential_id` + `biometric_public_key` (credencial WebAuthn registrada no dispositivo)
-- `biometric_enabled` (boolean)
+Agrupei seus pedidos em 7 blocos. Posso fazer tudo de uma vez, mas confirma se a interpretação está certa.
 
-RLS: cada usuário só lê/edita o próprio registro.
+---
 
-### 2. Tela de configuração `/security/setup`
-Aparece no primeiro login. Pede:
-- Criar PIN de 4-6 dígitos (com confirmação)
-- "Ativar biometria neste dispositivo?" → chama WebAuthn (`navigator.credentials.create`) e salva a credencial. Funciona com Face ID / Touch ID / impressão digital Android. Se o aparelho não suportar, esconde a opção.
+### 1. Perfil do usuário + cadastro inicial
+- Nova tabela `profiles` (nome completo, CPF, data de nascimento, telefone, limite de alerta vermelho).
+- Quando o usuário loga pela primeira vez e não tem perfil → tela `/onboarding` pedindo esses dados (com máscara + validação de CPF e data).
+- Nova rota `/profile` acessível por um ícone na home → editar dados, definir **"alerta de saldo baixo"** (ex.: R$ 300) e **importar histórico (CSV/Excel)**.
 
-Acessível depois em `/security` para trocar PIN ou desativar.
+### 2. Lógica de "saldo do mês" repensada (o ponto mais importante)
+Hoje, quando você marca uma conta como **paga**, o "Contas do mês" subtrai e some — você quer o oposto: **uma conta paga continua contando como gasto do mês**. Vou mudar para:
 
-### 3. Tela de bloqueio (LockScreen)
-Componente que envolve as rotas autenticadas. Mostra ao abrir/reabrir o app (controlado por flag em `sessionStorage` — uma vez desbloqueado fica liberado até fechar a aba).
+- **Gasto do mês** = soma de TUDO que vence ou foi gasto no mês (pago + pendente), sem distinção.
+- **Falta pagar** = só pendentes (informativo, em outro card).
+- **Saldo disponível** = salário − gasto do mês.
+- Se `saldo disponível ≤ limite_alerta` (configurável no perfil) → número fica **vermelho** com ícone de alerta.
 
-- Botão grande "Desbloquear com biometria" (se ativada) → WebAuthn `get`
-- Teclado numérico pra digitar o PIN
-- Após 3 erros no PIN → bloqueio 30s; depois 5 erros → 2min; 7 erros → 10min (timer visível, persistido em `localStorage`)
+### 3. "Gastos do mês" avulsos (almoço, marmita, etc.)
+- Nova categoria interna de lançamento: `expense_type = 'one_off'` na tabela `bills` (ou flag `is_one_off`).
+- Aparecem só no mês em que foram lançados, **nunca se repetem**, nem viram fixos.
+- Botão rápido na home: "+ Gasto rápido" (nome + valor + categoria, já marca como pago hoje).
 
-### 4. Bloqueio progressivo no login (e-mail/senha)
-Em `/login`, conto tentativas falhas por e-mail em `localStorage`:
-- 5 erros → espera 30s
-- 7 erros → 2min  
-- 9 erros → 10min
+### 4. Cadastro de conta — melhorias no modal
+- Adicionar **seletor de status (Paga / Pendente)** já no cadastro (hoje só dá pra marcar depois).
+- Parcelamento já funciona corretamente (300 ÷ 3 = 100/mês em 3 meses consecutivos), só vou deixar isso explícito com um preview: "3 parcelas de R$ 100,00".
+- Quando escolher categoria **"Outros"** → abre um input para digitar categoria personalizada (salva em nova tabela `custom_categories` por usuário).
 
-Botão "Entrar" desabilita e mostra contagem regressiva. Reseta em login bem-sucedido.
+### 5. Renomear "Fixas" → "Custos"
+- A aba `/fixed` vira `/costs` (ou só renomeia o label) e passa a listar **todos os custos recorrentes**: fixos + parcelamentos ativos agrupados.
+- Cada item mostra: nome, valor, tipo (Fixa mensal / Parcela X/Y), próximas ocorrências.
 
-> Observação: rate-limit "de verdade" (no servidor) o Supabase Auth já faz nativamente — limita tentativas por IP. Esse bloqueio do cliente é uma camada extra de UX e proteção contra scripts simples no mesmo navegador.
+### 6. Importar histórico (CSV/Excel)
+- Tela em `/profile/import`.
+- Aceita upload de `.csv` ou `.xlsx`.
+- Mapeamento simples: colunas esperadas → `nome, valor, categoria, vencimento, status` (com preview antes de confirmar).
+- Insere em lote em `bills`.
 
-### 5. Outros reforços de segurança que já vou ligar
-- **HIBP (verificação de senha vazada)** no cadastro/troca de senha via `configure_auth`
-- **CSP básico** nos headers HTML (bloqueia scripts inline de origens estranhas)
-- Confirmar que `dangerouslySetInnerHTML` não está em uso (já confirmei — não está)
+### 7. Visão do mês atualizada
+Reflete a nova lógica do bloco 2:
+- Receita: R$ X
+- Gasto do mês: R$ Y (pago + pendente)
+- Falta pagar: R$ Z
+- **Saldo disponível: R$ (X−Y)** ← vermelho se ≤ limite
 
-## Detalhes técnicos
+---
 
-- **WebAuthn**: registro e autenticação 100% no cliente (challenge gerado client-side, credencial guardada no Supabase). Para um app pessoal de finanças isso é suficiente — a chave privada nunca sai do Secure Enclave do aparelho. Se quiser depois posso adicionar verificação server-side com `@simplewebauthn/server` numa server function.
-- **Hash do PIN**: PBKDF2 via `crypto.subtle` no browser (100k iterações), salt único de 16 bytes por usuário.
-- **Sessão Supabase**: continua intacta (você pediu pra não deslogar). A tela de bloqueio é só uma camada visual em cima das rotas `_authenticated`.
+## Mudanças técnicas
+- Migrations: `profiles`, `custom_categories`, coluna `is_one_off boolean default false` em `bills`, coluna `alert_threshold numeric` em `profiles`.
+- Novas rotas: `_authenticated.onboarding.tsx`, `_authenticated.profile.tsx`, `_authenticated.profile.import.tsx`.
+- Renomear: `_authenticated.fixed.tsx` → `_authenticated.costs.tsx` (mantém retrocompat com redirect).
+- Refatorar `_authenticated.app.tsx` (cards de totais) e `_authenticated.month.tsx` (mesma lógica).
+- Editar `BillEditSheet` e `_authenticated.new.tsx` para incluir status + categoria custom.
+- Adicionar parse de CSV/XLSX (uso `papaparse` para CSV; XLSX uso `xlsx` package).
 
-## Arquivos que vou criar/editar
+---
 
-- **Migration**: tabela `app_security` + RLS + grants
-- **`src/lib/security.ts`**: hash PIN, registrar/verificar biometria (WebAuthn), gerenciar tentativas
-- **`src/components/LockScreen.tsx`**: tela de desbloqueio
-- **`src/routes/_authenticated/security.tsx`** + **`security.setup.tsx`**: configuração
-- **`src/routes/_authenticated.tsx`**: integrar LockScreen
-- **`src/routes/login.tsx`**: bloqueio progressivo
-- **`src/routes/__root.tsx`**: meta CSP
-- **`configure_auth`**: ligar HIBP
-
-Posso seguir?
+## Confirma antes de eu começar?
+1. **Validação de CPF**: faço só formato (XXX.XXX.XXX-XX) ou valido dígito verificador também?
+2. **Importar**: aceita só CSV ou quer XLSX também? (XLSX adiciona ~400KB ao bundle).
+3. **Custos recorrentes**: prefere renomear "Fixas" → "Custos" ou criar uma aba nova e manter as duas?
+4. Posso seguir com tudo isso de uma vez ou prefere por etapas?
