@@ -58,6 +58,7 @@ export type Database = {
           installment_group: string | null
           installment_number: number | null
           installment_total: number | null
+          is_one_off: boolean
           name: string
           notes: string | null
           paid_at: string | null
@@ -75,6 +76,7 @@ export type Database = {
           installment_group?: string | null
           installment_number?: number | null
           installment_total?: number | null
+          is_one_off?: boolean
           name: string
           notes?: string | null
           paid_at?: string | null
@@ -92,11 +94,33 @@ export type Database = {
           installment_group?: string | null
           installment_number?: number | null
           installment_total?: number | null
+          is_one_off?: boolean
           name?: string
           notes?: string | null
           paid_at?: string | null
           status?: Database["public"]["Enums"]["bill_status"]
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      custom_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
           user_id?: string
         }
         Relationships: []
@@ -167,6 +191,39 @@ export type Database = {
           updated_at?: string
           user_id?: string
           year?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          alert_threshold: number
+          birth_date: string | null
+          cpf: string | null
+          created_at: string
+          full_name: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_threshold?: number
+          birth_date?: string | null
+          cpf?: string | null
+          created_at?: string
+          full_name: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_threshold?: number
+          birth_date?: string | null
+          cpf?: string | null
+          created_at?: string
+          full_name?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
