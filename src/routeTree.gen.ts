@@ -14,12 +14,15 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSecurityRouteImport } from './routes/_authenticated.security'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated.reports'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated.profile'
 import { Route as AuthenticatedPinSetupRouteImport } from './routes/_authenticated.pin-setup'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated.onboarding'
 import { Route as AuthenticatedNewRouteImport } from './routes/_authenticated.new'
 import { Route as AuthenticatedMonthRouteImport } from './routes/_authenticated.month'
 import { Route as AuthenticatedFixedRouteImport } from './routes/_authenticated.fixed'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated.calendar'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated.app'
+import { Route as AuthenticatedProfileImportRouteImport } from './routes/_authenticated.profile.import'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -45,9 +48,19 @@ const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedPinSetupRoute = AuthenticatedPinSetupRouteImport.update({
   id: '/pin-setup',
   path: '/pin-setup',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedNewRoute = AuthenticatedNewRouteImport.update({
@@ -75,6 +88,12 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   path: '/app',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedProfileImportRoute =
+  AuthenticatedProfileImportRouteImport.update({
+    id: '/import',
+    path: '/import',
+    getParentRoute: () => AuthenticatedProfileRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -84,9 +103,12 @@ export interface FileRoutesByFullPath {
   '/fixed': typeof AuthenticatedFixedRoute
   '/month': typeof AuthenticatedMonthRoute
   '/new': typeof AuthenticatedNewRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pin-setup': typeof AuthenticatedPinSetupRoute
+  '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/reports': typeof AuthenticatedReportsRoute
   '/security': typeof AuthenticatedSecurityRoute
+  '/profile/import': typeof AuthenticatedProfileImportRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -96,9 +118,12 @@ export interface FileRoutesByTo {
   '/fixed': typeof AuthenticatedFixedRoute
   '/month': typeof AuthenticatedMonthRoute
   '/new': typeof AuthenticatedNewRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/pin-setup': typeof AuthenticatedPinSetupRoute
+  '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/reports': typeof AuthenticatedReportsRoute
   '/security': typeof AuthenticatedSecurityRoute
+  '/profile/import': typeof AuthenticatedProfileImportRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -110,9 +135,12 @@ export interface FileRoutesById {
   '/_authenticated/fixed': typeof AuthenticatedFixedRoute
   '/_authenticated/month': typeof AuthenticatedMonthRoute
   '/_authenticated/new': typeof AuthenticatedNewRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/pin-setup': typeof AuthenticatedPinSetupRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/security': typeof AuthenticatedSecurityRoute
+  '/_authenticated/profile/import': typeof AuthenticatedProfileImportRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -124,9 +152,12 @@ export interface FileRouteTypes {
     | '/fixed'
     | '/month'
     | '/new'
+    | '/onboarding'
     | '/pin-setup'
+    | '/profile'
     | '/reports'
     | '/security'
+    | '/profile/import'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -136,9 +167,12 @@ export interface FileRouteTypes {
     | '/fixed'
     | '/month'
     | '/new'
+    | '/onboarding'
     | '/pin-setup'
+    | '/profile'
     | '/reports'
     | '/security'
+    | '/profile/import'
   id:
     | '__root__'
     | '/'
@@ -149,9 +183,12 @@ export interface FileRouteTypes {
     | '/_authenticated/fixed'
     | '/_authenticated/month'
     | '/_authenticated/new'
+    | '/_authenticated/onboarding'
     | '/_authenticated/pin-setup'
+    | '/_authenticated/profile'
     | '/_authenticated/reports'
     | '/_authenticated/security'
+    | '/_authenticated/profile/import'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -197,11 +234,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/pin-setup': {
       id: '/_authenticated/pin-setup'
       path: '/pin-setup'
       fullPath: '/pin-setup'
       preLoaderRoute: typeof AuthenticatedPinSetupRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/new': {
@@ -239,8 +290,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/profile/import': {
+      id: '/_authenticated/profile/import'
+      path: '/import'
+      fullPath: '/profile/import'
+      preLoaderRoute: typeof AuthenticatedProfileImportRouteImport
+      parentRoute: typeof AuthenticatedProfileRoute
+    }
   }
 }
+
+interface AuthenticatedProfileRouteChildren {
+  AuthenticatedProfileImportRoute: typeof AuthenticatedProfileImportRoute
+}
+
+const AuthenticatedProfileRouteChildren: AuthenticatedProfileRouteChildren = {
+  AuthenticatedProfileImportRoute: AuthenticatedProfileImportRoute,
+}
+
+const AuthenticatedProfileRouteWithChildren =
+  AuthenticatedProfileRoute._addFileChildren(AuthenticatedProfileRouteChildren)
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
@@ -248,7 +317,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFixedRoute: typeof AuthenticatedFixedRoute
   AuthenticatedMonthRoute: typeof AuthenticatedMonthRoute
   AuthenticatedNewRoute: typeof AuthenticatedNewRoute
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPinSetupRoute: typeof AuthenticatedPinSetupRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSecurityRoute: typeof AuthenticatedSecurityRoute
 }
@@ -259,7 +330,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFixedRoute: AuthenticatedFixedRoute,
   AuthenticatedMonthRoute: AuthenticatedMonthRoute,
   AuthenticatedNewRoute: AuthenticatedNewRoute,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPinSetupRoute: AuthenticatedPinSetupRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSecurityRoute: AuthenticatedSecurityRoute,
 }

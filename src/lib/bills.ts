@@ -17,6 +17,7 @@ export type Bill = {
   installment_total: number | null;
   installment_group: string | null;
   fixed_bill_id: string | null;
+  is_one_off: boolean;
   status: "pending" | "paid";
 };
 
