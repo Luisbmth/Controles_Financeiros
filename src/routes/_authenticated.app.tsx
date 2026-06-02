@@ -1,18 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMonthBills, togglePaid, type Bill } from "@/lib/bills";
-import { formatBRL } from "@/lib/money";
+import { formatBRL, parseMoneyInput } from "@/lib/money";
 import { CATEGORY_COLOR } from "@/lib/categories";
 import { useProfile } from "@/lib/profile";
 import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, ChevronLeft, ChevronRight, Wallet, AlertTriangle, Undo2, User, TrendingUp, Zap } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Wallet, AlertTriangle, Undo2, User, TrendingUp, Zap, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { BillEditSheet } from "@/components/BillEditSheet";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({ meta: [{ title: "Início · Saldo" }] }),
@@ -28,6 +32,9 @@ function Dashboard() {
   const { user } = useAuth();
   const [editing, setEditing] = useState<Bill | null>(null);
   const [income, setIncome] = useState(0);
+  const [salaryOpen, setSalaryOpen] = useState(false);
+  const [salaryStr, setSalaryStr] = useState("");
+  const [salaryBusy, setSalaryBusy] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -49,9 +56,29 @@ function Dashboard() {
       overdueCount: overdue.length };
   }, [bills]);
 
-  const available = income - totals.total;
+  // Salário do mês = salário cadastrado − o que já foi PAGO
+  const remaining = income - totals.paid;
   const alertAt = profile?.alert_threshold ?? 0;
-  const isLow = income > 0 && available <= alertAt;
+  const isLow = income > 0 && remaining <= alertAt;
+
+  const openSalary = () => {
+    setSalaryStr(income ? income.toFixed(2).replace(".", ",") : "");
+    setSalaryOpen(true);
+  };
+  const saveSalary = async () => {
+    if (!user) return;
+    const v = parseMoneyInput(salaryStr);
+    setSalaryBusy(true);
+    const { error } = await supabase.from("monthly_income").upsert(
+      { user_id: user.id, year: cursor.y, month: cursor.m, amount: v },
+      { onConflict: "user_id,year,month" }
+    );
+    setSalaryBusy(false);
+    if (error) return toast.error(error.message);
+    setIncome(v);
+    setSalaryOpen(false);
+    toast.success("Salário atualizado ✓");
+  };
 
   const upcoming = useMemo(
     () => bills.filter((b) => b.status === "pending" && !b.is_one_off)
@@ -108,31 +135,42 @@ function Dashboard() {
         </div>
       </header>
 
-      {income > 0 && (
-        <section className="px-5 pt-5">
+      <section className="px-5 pt-5">
+        <button onClick={openSalary} className="w-full text-left">
           <div className={cn(
-            "flex items-center gap-4 rounded-2xl p-4 shadow-sm ring-1",
+            "flex items-center gap-4 rounded-2xl p-4 shadow-sm ring-1 transition active:scale-[0.99]",
+            income === 0 ? "bg-surface ring-border border border-dashed border-border" :
             isLow ? "bg-destructive/5 ring-destructive/40" : "bg-surface ring-border"
           )}>
             <span className={cn(
               "flex h-12 w-12 items-center justify-center rounded-2xl",
+              income === 0 ? "bg-muted text-muted-foreground" :
               isLow ? "bg-destructive/15 text-destructive" : "bg-success/10 text-success"
             )}>
-              {isLow ? <AlertTriangle className="h-5 w-5" /> : <Wallet className="h-5 w-5" />}
+              {income === 0 ? <Pencil className="h-5 w-5" /> :
+                isLow ? <AlertTriangle className="h-5 w-5" /> : <Wallet className="h-5 w-5" />}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Saldo disponível</p>
-              <p className={cn(
-                "font-display text-2xl font-bold tabular-nums",
-                isLow && "text-destructive"
-              )}>{formatBRL(available)}</p>
-              <p className="text-xs text-muted-foreground">
-                Receita {formatBRL(income)} − gastos {formatBRL(totals.total)}
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                {income === 0 ? "Cadastrar salário" : "Salário do mês"}
               </p>
+              {income === 0 ? (
+                <p className="font-display text-lg font-semibold text-muted-foreground">Toque para informar</p>
+              ) : (
+                <>
+                  <p className={cn("font-display text-2xl font-bold tabular-nums", isLow && "text-destructive")}>
+                    {formatBRL(remaining)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatBRL(income)} − {formatBRL(totals.paid)} pago
+                  </p>
+                </>
+              )}
             </div>
+            <Pencil className="h-4 w-4 text-muted-foreground" />
           </div>
-        </section>
-      )}
+        </button>
+      </section>
 
       <section className="px-5 pt-4">
         <div className="grid grid-cols-3 gap-3">
@@ -188,6 +226,28 @@ function Dashboard() {
       </section>
 
       <BillEditSheet bill={editing} open={!!editing} onOpenChange={(v) => !v && setEditing(null)} />
+
+      <Dialog open={salaryOpen} onOpenChange={setSalaryOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Salário do mês</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="salary">Valor (R$)</Label>
+            <Input id="salary" autoFocus inputMode="decimal" placeholder="0,00"
+              value={salaryStr} onChange={(e) => setSalaryStr(e.target.value)} className="h-12" />
+            <p className="text-xs text-muted-foreground">
+              O saldo do mês é o salário menos o que já foi pago.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setSalaryOpen(false)}>Cancelar</Button>
+            <Button onClick={saveSalary} disabled={salaryBusy}>
+              {salaryBusy ? "Salvando…" : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
