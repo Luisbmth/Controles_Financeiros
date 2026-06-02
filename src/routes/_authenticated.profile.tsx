@@ -122,16 +122,6 @@ function ProfilePage() {
           </div>
         </Link>
 
-        <Link to="/security"
-          className="flex items-center gap-3 rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-border">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent-foreground">
-            <Shield className="h-5 w-5" />
-          </span>
-          <div className="flex-1">
-            <p className="font-semibold">Segurança</p>
-            <p className="text-xs text-muted-foreground">PIN e biometria</p>
-          </div>
-        </Link>
 
         <button
           onClick={() => supabase.auth.signOut()}
