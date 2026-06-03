@@ -143,3 +143,44 @@ function ProfilePage() {
     </div>
   );
 }
+
+function AppearanceSection() {
+  const { color, setColor } = useThemeColor();
+  const entries = Object.entries(THEME_COLORS) as [Exclude<ThemeColorKey, "default">, typeof THEME_COLORS[keyof typeof THEME_COLORS]][];
+  return (
+    <section className="space-y-3 px-5 pt-6">
+      <div>
+        <h2 className="font-display text-lg font-bold">Aparência</h2>
+        <p className="text-xs text-muted-foreground">Escolha a cor principal do app</p>
+      </div>
+      <div className="rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-border">
+        <div className="grid grid-cols-6 gap-3">
+          {entries.map(([key, p]) => {
+            const active = color === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setColor(key)}
+                aria-label={p.label}
+                className="relative flex h-11 w-11 items-center justify-center rounded-full ring-2 ring-offset-2 ring-offset-surface transition-all"
+                style={{ backgroundColor: p.swatch, boxShadow: active ? `0 0 0 2px ${p.swatch}` : undefined, ['--tw-ring-color' as any]: active ? p.swatch : 'transparent' }}
+              >
+                {active && <Check className="h-5 w-5 text-white" strokeWidth={3} />}
+              </button>
+            );
+          })}
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setColor("default")}
+          className="mt-4 h-10 w-full"
+        >
+          Restaurar padrão
+        </Button>
+      </div>
+    </section>
+  );
+}
+
