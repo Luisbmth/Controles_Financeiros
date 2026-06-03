@@ -111,7 +111,10 @@ function ProfilePage() {
         </Button>
       </form>
 
+      <AppearanceSection />
+
       <section className="space-y-2 px-5 pt-6">
+
         <Link to="/profile/import"
           className="flex items-center gap-3 rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-border">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
