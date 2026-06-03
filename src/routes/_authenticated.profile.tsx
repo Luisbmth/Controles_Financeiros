@@ -10,7 +10,8 @@ import { maskCPF, maskPhone, unmaskCPF, isValidCPF } from "@/lib/cpf";
 import { parseMoneyInput, formatBRL } from "@/lib/money";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Download, LogOut } from "lucide-react";
+import { ArrowLeft, Download, LogOut, Check } from "lucide-react";
+import { useThemeColor, THEME_COLORS, type ThemeColorKey } from "@/lib/theme-color";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Perfil · Saldo" }] }),
