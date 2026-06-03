@@ -38,8 +38,14 @@ function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("monthly_income").select("amount")
-      .eq("year", cursor.y).eq("month", cursor.m).maybeSingle()
+    // Pega o salário mais recente definido até (inclusive) o mês corrente.
+    // Assim o valor persiste em meses futuros até uma nova alteração.
+    supabase.from("monthly_income").select("amount, year, month")
+      .or(`year.lt.${cursor.y},and(year.eq.${cursor.y},month.lte.${cursor.m})`)
+      .order("year", { ascending: false })
+      .order("month", { ascending: false })
+      .limit(1)
+      .maybeSingle()
       .then(({ data }) => setIncome(data?.amount ? Number(data.amount) : 0));
   }, [user, cursor.y, cursor.m]);
 
