@@ -38,8 +38,14 @@ function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("monthly_income").select("amount")
-      .eq("year", cursor.y).eq("month", cursor.m).maybeSingle()
+    // Pega o salário mais recente definido até (inclusive) o mês corrente.
+    // Assim o valor persiste em meses futuros até uma nova alteração.
+    supabase.from("monthly_income").select("amount, year, month")
+      .or(`year.lt.${cursor.y},and(year.eq.${cursor.y},month.lte.${cursor.m})`)
+      .order("year", { ascending: false })
+      .order("month", { ascending: false })
+      .limit(1)
+      .maybeSingle()
       .then(({ data }) => setIncome(data?.amount ? Number(data.amount) : 0));
   }, [user, cursor.y, cursor.m]);
 
@@ -267,10 +273,10 @@ function StatCard({ label, value, sub, tone }: { label: string; value: string; s
     muted: "bg-muted text-muted-foreground",
   }[tone];
   return (
-    <div className="rounded-2xl bg-surface p-3 shadow-sm ring-1 ring-border">
+    <div className="min-w-0 overflow-hidden rounded-2xl bg-surface p-3 shadow-sm ring-1 ring-border">
       <span className={cn("inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider", toneClass)}>{label}</span>
-      <p className="mt-2 font-display text-lg font-bold tabular-nums leading-tight">{value}</p>
-      <p className="text-[11px] text-muted-foreground">{sub}</p>
+      <p className="mt-2 font-display text-base font-bold tabular-nums leading-tight break-all">{value}</p>
+      <p className="text-[11px] text-muted-foreground truncate">{sub}</p>
     </div>
   );
 }
